@@ -25,6 +25,7 @@ import os
 import re
 import shutil
 import subprocess
+import time
 import sys
 import tempfile
 from pathlib import Path
@@ -200,6 +201,7 @@ def transcribe_with_gemini(audio_path: Path) -> str | None:
         return None
     try:
         from google import genai
+        from google.genai import errors as genai_errors
     except ImportError:
         print(
             "note: GEMINI_API_KEY is set but the 'google-genai' package isn't installed.\n"
@@ -207,18 +209,36 @@ def transcribe_with_gemini(audio_path: Path) -> str | None:
             file=sys.stderr,
         )
         return None
+
     client = genai.Client(api_key=api_key)
-    uploaded = client.files.upload(file=str(audio_path))
     prompt = (
         "Transcribe this audio. Output one line per utterance as "
         "`[HH:MM:SS] text`, using the actual timestamp within the audio. "
         "No commentary, just the timestamped transcript."
     )
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=[uploaded, prompt],
+
+    attempts = 2
+    for attempt in range(1, attempts + 1):
+        try:
+            uploaded = client.files.upload(file=str(audio_path))
+            response = client.models.generate_content(
+                model="gemini-flash-latest",
+                contents=[uploaded, prompt],
+            )
+            return response.text
+        except genai_errors.ServerError as e:
+            print(f"note: Gemini transcription attempt {attempt}/{attempts} failed: {e}", file=sys.stderr)
+            if attempt < attempts:
+                time.sleep(5)
+        except genai_errors.APIError as e:
+            print(f"note: Gemini transcription failed: {e}", file=sys.stderr)
+            break
+
+    print(
+        "note: falling back to no transcript -- frames are still available.",
+        file=sys.stderr,
     )
-    return response.text
+    return None
 
 
 def main() -> None:
