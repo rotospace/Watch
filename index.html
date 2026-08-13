@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Local Prospect Outreach</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">&#9993;</span>
+      <div>
+        <h1>Local Prospect Outreach</h1>
+        <p class="tagline">Reach [industry] owners in [city/region] — starting with South Florida</p>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab-btn active" data-tab="setup">1. Setup</button>
+      <button class="tab-btn" data-tab="scripts">2. Scripts</button>
+      <button class="tab-btn" data-tab="prospects">3. Prospects</button>
+      <button class="tab-btn" data-tab="send">4. Generate &amp; Send</button>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- ============ TAB 1: SETUP ============ -->
+    <section class="tab-panel active" id="tab-setup">
+      <div class="panel-grid">
+        <div class="card">
+          <h2>Your info</h2>
+          <p class="hint">Used to fill the {{signature}} block and merge fields in every script.</p>
+          <div class="form-row two">
+            <label>Your name<input type="text" id="s-name" placeholder="Jordan Fields" /></label>
+            <label>Your title / role<input type="text" id="s-title" placeholder="Founder" /></label>
+          </div>
+          <div class="form-row two">
+            <label>Your company<input type="text" id="s-company" placeholder="Palm Digital Co." /></label>
+            <label>Your phone<input type="text" id="s-phone" placeholder="(305) 555-0142" /></label>
+          </div>
+          <div class="form-row two">
+            <label>Your email<input type="email" id="s-email" placeholder="j@yourcompany.com" /></label>
+            <label>Booking link<input type="text" id="s-booking" placeholder="calendly.com/you/15min" /></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Your offer</h2>
+          <p class="hint">One sentence describing what you do for these owners. This drives the {{your_offer}} merge field used across every script.</p>
+          <label>Your offer / value proposition
+            <textarea id="s-offer" rows="2" placeholder="e.g. helping local service businesses get more 5-star reviews and repeat customers"></textarea>
+          </label>
+          <label>Proof point <span class="hint-inline">(used in the follow-up email)</span>
+            <textarea id="s-proof" rows="2" placeholder="e.g. We've helped a handful of businesses in South Florida add 15-20 new bookings a month within 60 days."></textarea>
+          </label>
+          <button class="btn" id="save-setup">Save</button>
+          <span class="save-flag" id="setup-saved-flag">Saved</span>
+        </div>
+
+        <div class="card">
+          <h2>Markets (city / region)</h2>
+          <p class="hint">Start with South Florida, or name any new city/region to target.</p>
+          <div class="form-row three">
+            <label>Region<input type="text" id="m-region" placeholder="South Florida" /></label>
+            <label>City / area<input type="text" id="m-city" placeholder="Miami" /></label>
+            <button class="btn" id="add-market">+ Add market</button>
+          </div>
+          <div id="market-list" class="chip-list"></div>
+        </div>
+
+        <div class="card">
+          <h2>Backup</h2>
+          <p class="hint">Everything is saved locally in this browser. Export a backup or move it to another device.</p>
+          <div class="form-row">
+            <button class="btn secondary" id="export-json">Export full backup (.json)</button>
+            <label class="btn secondary file-btn">Import backup
+              <input type="file" id="import-json" accept="application/json" hidden />
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TAB 2: SCRIPTS ============ -->
+    <section class="tab-panel" id="tab-scripts">
+      <div class="scripts-layout">
+        <div class="card industry-panel">
+          <h2>Industries</h2>
+          <div class="form-row two">
+            <label>New industry name<input type="text" id="i-label" placeholder="e.g. Veterinary Clinics" /></label>
+            <label>Category
+              <select id="i-category"></select>
+            </label>
+          </div>
+          <label>Pain point hook <span class="hint-inline">(used in the opening line)</span>
+            <input type="text" id="i-painhook" placeholder="e.g. no-shows and slow booking follow-up" />
+          </label>
+          <button class="btn" id="add-industry">+ Add industry</button>
+          <div id="industry-list" class="industry-list"></div>
+        </div>
+
+        <div class="card script-editor">
+          <h2>Email sequence <span id="script-editor-industry" class="pill"></span></h2>
+          <p class="hint">Every industry starts from the same 3-step framework — edit freely per industry. Preview uses a sample prospect.</p>
+          <div id="script-steps"></div>
+          <button class="btn secondary" id="reset-scripts">Reset this industry to default scripts</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TAB 3: PROSPECTS ============ -->
+    <section class="tab-panel" id="tab-prospects">
+      <div class="card">
+        <h2>Add a prospect</h2>
+        <div class="form-row five">
+          <label>Business name<input type="text" id="p-business" /></label>
+          <label>Owner first name<input type="text" id="p-owner" /></label>
+          <label>Email<input type="email" id="p-email" /></label>
+          <label>Market<select id="p-market"></select></label>
+          <label>Industry<select id="p-industry"></select></label>
+        </div>
+        <button class="btn" id="add-prospect">+ Add prospect</button>
+      </div>
+
+      <div class="card">
+        <h2>Import from CSV</h2>
+        <p class="hint">Columns: <code>business_name, owner_first_name, email, phone, city, industry</code> (city/industry are matched by name; unmatched values are created automatically). Paste CSV text or upload a file.</p>
+        <textarea id="csv-input" rows="4" placeholder="business_name,owner_first_name,email,phone,city,industry
+Sunshine Roofing,Marco,marco@sunshineroofingfl.com,,Miami,Roofing Contractors"></textarea>
+        <div class="form-row">
+          <label class="btn secondary file-btn">Upload CSV file
+            <input type="file" id="csv-file" accept=".csv,text/csv" hidden />
+          </label>
+          <button class="btn" id="import-csv">Import</button>
+          <span class="hint-inline" id="import-result"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row-between">
+          <h2>Prospect list (<span id="prospect-count">0</span>)</h2>
+          <div class="form-row">
+            <label>Filter market<select id="filter-market"><option value="">All</option></select></label>
+            <label>Filter industry<select id="filter-industry"><option value="">All</option></select></label>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="prospect-table">
+            <thead>
+              <tr><th>Business</th><th>Owner</th><th>Email</th><th>Market</th><th>Industry</th><th>Sent</th><th></th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TAB 4: GENERATE & SEND ============ -->
+    <section class="tab-panel" id="tab-send">
+      <div class="card">
+        <h2>Generate emails</h2>
+        <div class="form-row four">
+          <label>Market<select id="g-market"><option value="">All markets</option></select></label>
+          <label>Industry<select id="g-industry"><option value="">All industries</option></select></label>
+          <label>Sequence step<select id="g-step">
+            <option value="1">Step 1 — Initial outreach</option>
+            <option value="2">Step 2 — Follow-up</option>
+            <option value="3">Step 3 — Breakup / last touch</option>
+          </select></label>
+          <label>Only show<select id="g-onlyshow">
+            <option value="not-sent">Not yet sent this step</option>
+            <option value="all">All matching prospects</option>
+          </select></label>
+        </div>
+        <div class="form-row">
+          <button class="btn" id="generate-btn">Generate</button>
+          <button class="btn secondary" id="export-csv-btn">Export CSV (mail merge)</button>
+          <span class="hint-inline" id="generate-count"></span>
+        </div>
+      </div>
+
+      <div id="generated-list"></div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>All data stays in this browser's local storage — nothing is sent anywhere. Built for reaching local business owners, one city/region and industry at a time.</p>
+  </footer>
+
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
