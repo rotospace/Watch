@@ -57,40 +57,38 @@ const DEFAULT_INDUSTRIES = [
 const SCRIPT_FRAMEWORK = [
   {
     step: 1,
-    name: "Initial outreach",
-    subject: "Quick idea for {{business_name}}",
+    name: "Initial outreach (Day 0)",
+    subject: "question about {{business_name}}",
     body:
 `Hi {{owner_first_name}},
 
-I work with {{industry_label}} in {{city}} on {{your_offer}}. Most {{industry_label}} in {{city}} deal with {{pain_hook}} — figured it was worth a quick note.
+Most {{industry_label}} in {{city}} I talk to are dealing with {{pain_hook}}. If that's true for {{business_name}} too, I've got a couple of ideas around {{your_offer}} that might help — no obligation either way.
 
-If that sounds familiar, I'd like to share a couple of ideas specific to {{business_name}}. Worth a quick 10-minute call this week?
+Worth a quick look?
 
 {{signature}}`,
   },
   {
     step: 2,
-    name: "Follow-up",
-    subject: "Following up — {{business_name}}",
+    name: "Follow-up (Day 3)",
+    subject: "one more idea for {{business_name}}",
     body:
 `Hi {{owner_first_name}},
 
-Following up on my note below — didn't want it to get buried.
-
 {{proof_point}}
 
-If it's useful, I've got a couple of times open this week: {{booking_link}}. Happy to just reply here too if that's easier.
+Happy to walk you through how that could work for {{business_name}} — just reply here, or grab a time that works: {{booking_link}}.
 
 {{signature}}`,
   },
   {
     step: 3,
-    name: "Breakup / last touch",
-    subject: "Should I close the loop, {{owner_first_name}}?",
+    name: "Breakup / last touch (Day 10)",
+    subject: "closing the loop",
     body:
 `Hi {{owner_first_name}},
 
-I don't want to keep cluttering your inbox, so I'll leave it here for now. If growing {{business_name}} with {{your_offer}} becomes a priority down the road, just reply to this email and I'll pick it back up.
+I don't want to keep cluttering your inbox, so I'll leave this here for now. If tackling {{pain_hook}} becomes a priority for {{business_name}} down the road, just reply and I'll pick it back up.
 
 Either way, wishing you a strong season.
 
