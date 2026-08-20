@@ -37,8 +37,11 @@ backup** to move your scripts/prospects to another browser or device, then
    industry, or add your own industries (they get a sensible default sequence
    immediately, generated from the same framework).
 3. **Prospects** — add business owners one at a time, or bulk import a CSV with
-   columns `business_name, owner_first_name, email, phone, city, industry`.
-   Unrecognized cities/industries in the CSV are created automatically.
+   columns `business_name, owner_first_name, email, phone, city, industry, signal`.
+   Unrecognized cities/industries in the CSV are created automatically. `signal` is
+   optional: a short, specific observation about that one business (e.g. "no
+   standalone website, Facebook page only") that drops into the opening line via
+   `{{signal_line}}` — leave it blank and the email still reads cleanly.
 4. **Generate & Send** — filter prospects by market/industry, pick a sequence
    step, and generate the merged emails. Copy any email individually, mark
    prospects as sent per step (so step 2/3 filters only show who's actually due),
@@ -49,6 +52,12 @@ backup** to move your scripts/prospects to another browser or device, then
 `{{business_name}}` `{{owner_first_name}}` `{{city}}` `{{region}}`
 `{{industry_label}}` `{{pain_hook}}` `{{your_name}}` `{{your_company}}`
 `{{your_offer}}` `{{proof_point}}` `{{booking_link}}` `{{your_phone}}` `{{signature}}`
+`{{signal}}` `{{signal_line}}`
+
+`signal` is the free-text per-prospect observation set on the Prospects tab or via
+CSV. `signal_line` is the ready-to-drop-in sentence built from it (e.g. "Specifically,
+I noticed no standalone website, Facebook page only. ") — it's an empty string when a
+prospect has no signal, so scripts using `{{signal_line}}` read naturally either way.
 
 ## Extending it
 

@@ -18,7 +18,7 @@ function defaultState() {
     markets: DEFAULT_MARKETS.map((m) => ({ ...m })),
     industries: DEFAULT_INDUSTRIES.map((i) => ({ ...i, custom: false })),
     scriptOverrides: {}, // industryId -> array of {step, subject, body}
-    prospects: [], // {id, businessName, ownerFirstName, email, phone, marketId, industryId, notes, sentSteps: [1,2], lastSentAt}
+    prospects: [], // {id, businessName, ownerFirstName, email, phone, marketId, industryId, signal, notes, sentSteps: [1,2], lastSentAt}
   };
 }
 
@@ -74,6 +74,9 @@ function buildContext(prospect, sampleFallback) {
   const sender = state.sender;
   const useSample = sampleFallback && !prospect;
 
+  const signal = prospect ? (prospect.signal || "") : (useSample ? "no standalone website, just a Google Business Profile" : "");
+  const signalLine = signal ? `Specifically, I noticed ${signal}. ` : "";
+
   return {
     business_name: prospect ? prospect.businessName : (useSample ? "Sunshine Roofing" : ""),
     owner_first_name: prospect ? (prospect.ownerFirstName || "there") : (useSample ? "Marco" : "there"),
@@ -88,6 +91,8 @@ function buildContext(prospect, sampleFallback) {
     booking_link: sender.booking || "{{booking_link}}",
     your_phone: sender.phone || "{{your_phone}}",
     signature: buildSignature(sender),
+    signal,
+    signal_line: signalLine,
   };
 }
 
@@ -316,7 +321,7 @@ function renderScriptEditor() {
   ]);
   const fieldsNote = el("div", { class: "merge-fields" }, [
     "Merge fields: ",
-    ...["business_name","owner_first_name","city","region","industry_label","pain_hook","your_name","your_company","your_offer","proof_point","booking_link","your_phone","signature"]
+    ...["business_name","owner_first_name","city","region","industry_label","pain_hook","your_name","your_company","your_offer","proof_point","booking_link","your_phone","signature","signal","signal_line"]
       .map((f) => el("code", {}, [`{{${f}}}`])).flatMap((n, idx, arr) => idx < arr.length - 1 ? [n, document.createTextNode(" ")] : [n]),
   ]);
 
@@ -374,7 +379,7 @@ function renderProspects() {
   );
 
   if (!rows.length) {
-    tbody.appendChild(el("tr", {}, [el("td", { colspan: "7", class: "empty-state" }, ["No prospects yet — add one above or import a CSV."])]));
+    tbody.appendChild(el("tr", {}, [el("td", { colspan: "8", class: "empty-state" }, ["No prospects yet — add one above or import a CSV."])]));
     return;
   }
 
@@ -388,6 +393,7 @@ function renderProspects() {
       el("td", {}, [p.email || "—"]),
       el("td", {}, [market ? marketLabel(market) : "—"]),
       el("td", {}, [industry ? industry.label : "—"]),
+      el("td", { class: "signal-cell", title: p.signal || "" }, [p.signal || "—"]),
       el("td", { class: (p.sentSteps && p.sentSteps.length) ? "tag-done" : "tag-empty" }, [sentText]),
       el("td", {}, [el("button", { class: "btn small danger-outline", onclick: () => removeProspect(p.id) }, ["Remove"])]),
     ]));
@@ -406,12 +412,14 @@ function addProspectFromForm() {
   const email = document.getElementById("p-email").value.trim();
   const marketId = document.getElementById("p-market").value;
   const industryId = document.getElementById("p-industry").value;
+  const signal = document.getElementById("p-signal").value.trim();
   if (!business || !email) { alert("Business name and email are required."); return; }
-  state.prospects.push({ id: uid("p"), businessName: business, ownerFirstName: owner, email, phone: "", marketId, industryId, sentSteps: [] });
+  state.prospects.push({ id: uid("p"), businessName: business, ownerFirstName: owner, email, phone: "", marketId, industryId, signal, sentSteps: [] });
   saveState();
   document.getElementById("p-business").value = "";
   document.getElementById("p-owner").value = "";
   document.getElementById("p-email").value = "";
+  document.getElementById("p-signal").value = "";
   renderProspects();
 }
 
@@ -449,6 +457,7 @@ function importCSV(text) {
       email: r.email || "",
       phone: r.phone || "",
       marketId, industryId,
+      signal: r.signal || "",
       sentSteps: [],
     });
     count++;

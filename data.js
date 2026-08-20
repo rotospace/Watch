@@ -52,7 +52,10 @@ const DEFAULT_INDUSTRIES = [
 // The 3-step framework every industry's default script is generated from.
 // Merge fields available everywhere: {{business_name}} {{owner_first_name}} {{city}} {{region}}
 // {{industry_label}} {{pain_hook}} {{your_name}} {{your_company}} {{your_offer}} {{proof_point}}
-// {{booking_link}} {{your_phone}} {{signature}}
+// {{booking_link}} {{your_phone}} {{signature}} {{signal}} {{signal_line}}
+// signal is a free-text, per-prospect observation (e.g. "no standalone website, Facebook only").
+// signal_line is the pre-built sentence that drops it into the opener — empty string when a
+// prospect has no signal set, so scripts using it read fine either way.
 // (unrecognized {{fields}} are left as-is so custom edits never silently break)
 const SCRIPT_FRAMEWORK = [
   {
@@ -62,7 +65,7 @@ const SCRIPT_FRAMEWORK = [
     body:
 `Hi {{owner_first_name}},
 
-Most {{industry_label}} in {{city}} I talk to are dealing with {{pain_hook}}. If that's true for {{business_name}} too, I've got a couple of ideas around {{your_offer}} that might help — no obligation either way.
+Most {{industry_label}} in {{city}} I talk to are dealing with {{pain_hook}}. {{signal_line}}If that's true for {{business_name}} too, I've got a couple of ideas around {{your_offer}} that might help — no obligation either way.
 
 Worth a quick look?
 
