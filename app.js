@@ -786,6 +786,16 @@ function wireSetup() {
     renderScriptEditor();
   });
 
+  document.getElementById("fill-f9a-defaults").addEventListener("click", () => {
+    const companyField = document.getElementById("s-company");
+    if (!companyField.value.trim()) companyField.value = "Front9 Agency";
+    document.getElementById("s-offer").value =
+      "helping South Florida business owners generate more leads through SEO, paid ads, social media management, web design, custom app development, and FAA-certified drone/aerial video marketing";
+    document.getElementById("s-proof").value =
+      "We're Front9 Agency (f9a.co), led by Jason Reuter — an FAA Part 107-certified team already serving South Florida businesses with SEO, PPC, and web design, plus luxury drone/aerial video through our Rotospace brand. Happy to share examples specific to your industry.";
+    notify("Filled in from web search results — review for accuracy, then click Save.");
+  });
+
   document.getElementById("add-market").addEventListener("click", () => {
     const region = document.getElementById("m-region").value.trim() || "South Florida";
     const city = document.getElementById("m-city").value.trim();
