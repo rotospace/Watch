@@ -166,6 +166,9 @@ tr:last-child td { border-bottom: none; }
 .row-between { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin-bottom: 6px; }
 .tag-done { color: var(--success); font-weight: 600; }
 .tag-empty { color: var(--text-muted); }
+.row-actions { display: flex; gap: 6px; white-space: nowrap; }
+.editing-row td { background: var(--primary-soft); padding: 6px 8px; }
+.editing-row input, .editing-row select { padding: 6px 8px; font-size: 12.5px; min-width: 100px; }
 
 .generated-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; margin-bottom: 12px; }
 .generated-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 10px; flex-wrap: wrap; }

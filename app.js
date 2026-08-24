@@ -51,6 +51,7 @@ let state = loadState();
 let selectedIndustryId = state.industries[0] ? state.industries[0].id : null;
 let selectedStep = 1;
 let lastGenerated = []; // [{prospect, subject, body}]
+let editingProspectId = null;
 
 // ---------- lookups ----------
 function getMarket(id) { return state.markets.find((m) => m.id === id); }
@@ -361,6 +362,30 @@ function refreshIndustrySelects() {
 }
 
 // ---- Prospects tab ----
+function marketOptionEls(selectedId) {
+  return state.markets.map((m) => {
+    const opt = el("option", { value: m.id }, [marketLabel(m)]);
+    if (m.id === selectedId) opt.selected = true;
+    return opt;
+  });
+}
+
+function industryOptionEls(selectedId) {
+  const els = [];
+  INDUSTRY_CATEGORIES.forEach((cat) => {
+    const items = state.industries.filter((i) => i.category === cat.id);
+    if (!items.length) return;
+    const group = el("optgroup", { label: cat.label });
+    items.forEach((i) => {
+      const opt = el("option", { value: i.id }, [i.label]);
+      if (i.id === selectedId) opt.selected = true;
+      group.appendChild(opt);
+    });
+    els.push(group);
+  });
+  return els;
+}
+
 function renderProspects() {
   document.getElementById("prospect-count").textContent = state.prospects.length;
   const marketFilter = document.getElementById("filter-market").value;
@@ -374,11 +399,15 @@ function renderProspects() {
   );
 
   if (!rows.length) {
-    tbody.appendChild(el("tr", {}, [el("td", { colspan: "7", class: "empty-state" }, ["No prospects yet — add one above or import a CSV."])]));
+    tbody.appendChild(el("tr", {}, [el("td", { colspan: "8", class: "empty-state" }, ["No prospects yet — add one above or import a CSV."])]));
     return;
   }
 
   rows.forEach((p) => {
+    if (p.id === editingProspectId) {
+      tbody.appendChild(buildProspectEditRow(p));
+      return;
+    }
     const market = getMarket(p.marketId);
     const industry = getIndustry(p.industryId);
     const sentText = (p.sentSteps && p.sentSteps.length) ? p.sentSteps.sort().map((s) => "Step " + s).join(", ") : "—";
@@ -386,16 +415,57 @@ function renderProspects() {
       el("td", {}, [p.businessName || "—"]),
       el("td", {}, [p.ownerFirstName || "—"]),
       el("td", {}, [p.email || "—"]),
+      el("td", {}, [p.phone || "—"]),
       el("td", {}, [market ? marketLabel(market) : "—"]),
       el("td", {}, [industry ? industry.label : "—"]),
       el("td", { class: (p.sentSteps && p.sentSteps.length) ? "tag-done" : "tag-empty" }, [sentText]),
-      el("td", {}, [el("button", { class: "btn small danger-outline", onclick: () => removeProspect(p.id) }, ["Remove"])]),
+      el("td", { class: "row-actions" }, [
+        el("button", { class: "btn small secondary", onclick: () => { editingProspectId = p.id; renderProspects(); } }, ["Edit"]),
+        el("button", { class: "btn small danger-outline", onclick: () => removeProspect(p.id) }, ["Remove"]),
+      ]),
     ]));
   });
 }
 
+function buildProspectEditRow(p) {
+  const businessInput = el("input", { type: "text", value: p.businessName || "" });
+  const ownerInput = el("input", { type: "text", value: p.ownerFirstName || "" });
+  const emailInput = el("input", { type: "email", value: p.email || "" });
+  const phoneInput = el("input", { type: "text", value: p.phone || "" });
+  const marketSelect = el("select", {}, marketOptionEls(p.marketId));
+  const industrySelect = el("select", {}, industryOptionEls(p.industryId));
+
+  function save() {
+    if (!businessInput.value.trim() || !emailInput.value.trim()) { alert("Business name and email are required."); return; }
+    p.businessName = businessInput.value.trim();
+    p.ownerFirstName = ownerInput.value.trim();
+    p.email = emailInput.value.trim();
+    p.phone = phoneInput.value.trim();
+    p.marketId = marketSelect.value;
+    p.industryId = industrySelect.value;
+    editingProspectId = null;
+    saveState();
+    renderProspects();
+  }
+
+  return el("tr", { class: "editing-row" }, [
+    el("td", {}, [businessInput]),
+    el("td", {}, [ownerInput]),
+    el("td", {}, [emailInput]),
+    el("td", {}, [phoneInput]),
+    el("td", {}, [marketSelect]),
+    el("td", {}, [industrySelect]),
+    el("td", {}, ["—"]),
+    el("td", { class: "row-actions" }, [
+      el("button", { class: "btn small", onclick: save }, ["Save"]),
+      el("button", { class: "btn small secondary", onclick: () => { editingProspectId = null; renderProspects(); } }, ["Cancel"]),
+    ]),
+  ]);
+}
+
 function removeProspect(id) {
   state.prospects = state.prospects.filter((p) => p.id !== id);
+  if (editingProspectId === id) editingProspectId = null;
   saveState();
   renderProspects();
 }
