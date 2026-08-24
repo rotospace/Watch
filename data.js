@@ -50,7 +50,7 @@ const DEFAULT_INDUSTRIES = [
 ];
 
 // The 3-step framework every industry's default script is generated from.
-// Merge fields available everywhere: {{business_name}} {{owner_first_name}} {{city}} {{region}}
+// Merge fields available everywhere: {{business_name}} {{owner_first_name}} {{website}} {{city}} {{region}}
 // {{industry_label}} {{pain_hook}} {{your_name}} {{your_company}} {{your_offer}} {{proof_point}}
 // {{booking_link}} {{your_phone}} {{signature}}
 // (unrecognized {{fields}} are left as-is so custom edits never silently break)

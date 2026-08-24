@@ -115,10 +115,11 @@
     <section class="tab-panel" id="tab-prospects">
       <div class="card">
         <h2>Add a prospect</h2>
-        <div class="form-row five">
+        <div class="form-row six">
           <label>Business name<input type="text" id="p-business" /></label>
           <label>Owner first name<input type="text" id="p-owner" /></label>
           <label>Email<input type="email" id="p-email" /></label>
+          <label>Website<input type="text" id="p-website" placeholder="example.com" /></label>
           <label>Market<select id="p-market"></select></label>
           <label>Industry<select id="p-industry"></select></label>
         </div>
@@ -127,9 +128,9 @@
 
       <div class="card">
         <h2>Import from CSV</h2>
-        <p class="hint">Columns: <code>business_name, owner_first_name, email, phone, city, industry</code> (city/industry are matched by name; unmatched values are created automatically). Paste CSV text or upload a file.</p>
-        <textarea id="csv-input" rows="4" placeholder="business_name,owner_first_name,email,phone,city,industry
-Sunshine Roofing,Marco,marco@sunshineroofingfl.com,,Miami,Roofing Contractors"></textarea>
+        <p class="hint">Columns: <code>business_name, owner_first_name, email, phone, website, city, industry</code> (city/industry are matched by name; unmatched values are created automatically). Paste CSV text or upload a file.</p>
+        <textarea id="csv-input" rows="4" placeholder="business_name,owner_first_name,email,phone,website,city,industry
+Sunshine Roofing,Marco,marco@sunshineroofingfl.com,,sunshineroofingfl.com,Miami,Roofing Contractors"></textarea>
         <div class="form-row">
           <label class="btn secondary file-btn">Upload CSV file
             <input type="file" id="csv-file" accept=".csv,text/csv" hidden />
@@ -150,7 +151,7 @@ Sunshine Roofing,Marco,marco@sunshineroofingfl.com,,Miami,Roofing Contractors"><
         <div class="table-wrap">
           <table id="prospect-table">
             <thead>
-              <tr><th>Business</th><th>Owner</th><th>Email</th><th>Phone</th><th>Market</th><th>Industry</th><th>Sent</th><th></th></tr>
+              <tr><th>Business</th><th>Owner</th><th>Email</th><th>Phone</th><th>Website</th><th>Market</th><th>Industry</th><th>Sent</th><th></th></tr>
             </thead>
             <tbody></tbody>
           </table>

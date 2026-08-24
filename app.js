@@ -59,6 +59,12 @@ function getIndustry(id) { return state.industries.find((i) => i.id === id); }
 
 function marketLabel(m) { return m ? `${m.city} (${m.region})` : "—"; }
 
+function websiteCell(website) {
+  if (!website) return document.createTextNode("—");
+  const href = /^https?:\/\//i.test(website) ? website : `https://${website}`;
+  return el("a", { href, target: "_blank", rel: "noopener noreferrer" }, [website.replace(/^https?:\/\//i, "")]);
+}
+
 // ---------- merge/template engine ----------
 function buildSignature(sender) {
   const lines = ["Best,"];
@@ -78,6 +84,7 @@ function buildContext(prospect, sampleFallback) {
   return {
     business_name: prospect ? prospect.businessName : (useSample ? "Sunshine Roofing" : ""),
     owner_first_name: prospect ? (prospect.ownerFirstName || "there") : (useSample ? "Marco" : "there"),
+    website: prospect ? (prospect.website || "") : (useSample ? "sunshineroofingfl.com" : "{{website}}"),
     city: market ? market.city : (useSample ? "Miami" : "{{city}}"),
     region: market ? market.region : (useSample ? "South Florida" : "{{region}}"),
     industry_label: industry ? industry.label : (useSample ? "Roofing Contractors" : "{{industry_label}}"),
@@ -317,7 +324,7 @@ function renderScriptEditor() {
   ]);
   const fieldsNote = el("div", { class: "merge-fields" }, [
     "Merge fields: ",
-    ...["business_name","owner_first_name","city","region","industry_label","pain_hook","your_name","your_company","your_offer","proof_point","booking_link","your_phone","signature"]
+    ...["business_name","owner_first_name","website","city","region","industry_label","pain_hook","your_name","your_company","your_offer","proof_point","booking_link","your_phone","signature"]
       .map((f) => el("code", {}, [`{{${f}}}`])).flatMap((n, idx, arr) => idx < arr.length - 1 ? [n, document.createTextNode(" ")] : [n]),
   ]);
 
@@ -399,7 +406,7 @@ function renderProspects() {
   );
 
   if (!rows.length) {
-    tbody.appendChild(el("tr", {}, [el("td", { colspan: "8", class: "empty-state" }, ["No prospects yet — add one above or import a CSV."])]));
+    tbody.appendChild(el("tr", {}, [el("td", { colspan: "9", class: "empty-state" }, ["No prospects yet — add one above or import a CSV."])]));
     return;
   }
 
@@ -416,6 +423,7 @@ function renderProspects() {
       el("td", {}, [p.ownerFirstName || "—"]),
       el("td", {}, [p.email || "—"]),
       el("td", {}, [p.phone || "—"]),
+      el("td", {}, [websiteCell(p.website)]),
       el("td", {}, [market ? marketLabel(market) : "—"]),
       el("td", {}, [industry ? industry.label : "—"]),
       el("td", { class: (p.sentSteps && p.sentSteps.length) ? "tag-done" : "tag-empty" }, [sentText]),
@@ -432,6 +440,7 @@ function buildProspectEditRow(p) {
   const ownerInput = el("input", { type: "text", value: p.ownerFirstName || "" });
   const emailInput = el("input", { type: "email", value: p.email || "" });
   const phoneInput = el("input", { type: "text", value: p.phone || "" });
+  const websiteInput = el("input", { type: "text", value: p.website || "" });
   const marketSelect = el("select", {}, marketOptionEls(p.marketId));
   const industrySelect = el("select", {}, industryOptionEls(p.industryId));
 
@@ -441,6 +450,7 @@ function buildProspectEditRow(p) {
     p.ownerFirstName = ownerInput.value.trim();
     p.email = emailInput.value.trim();
     p.phone = phoneInput.value.trim();
+    p.website = websiteInput.value.trim();
     p.marketId = marketSelect.value;
     p.industryId = industrySelect.value;
     editingProspectId = null;
@@ -453,6 +463,7 @@ function buildProspectEditRow(p) {
     el("td", {}, [ownerInput]),
     el("td", {}, [emailInput]),
     el("td", {}, [phoneInput]),
+    el("td", {}, [websiteInput]),
     el("td", {}, [marketSelect]),
     el("td", {}, [industrySelect]),
     el("td", {}, ["—"]),
@@ -474,14 +485,16 @@ function addProspectFromForm() {
   const business = document.getElementById("p-business").value.trim();
   const owner = document.getElementById("p-owner").value.trim();
   const email = document.getElementById("p-email").value.trim();
+  const website = document.getElementById("p-website").value.trim();
   const marketId = document.getElementById("p-market").value;
   const industryId = document.getElementById("p-industry").value;
   if (!business || !email) { alert("Business name and email are required."); return; }
-  state.prospects.push({ id: uid("p"), businessName: business, ownerFirstName: owner, email, phone: "", marketId, industryId, sentSteps: [] });
+  state.prospects.push({ id: uid("p"), businessName: business, ownerFirstName: owner, email, phone: "", website, marketId, industryId, sentSteps: [] });
   saveState();
   document.getElementById("p-business").value = "";
   document.getElementById("p-owner").value = "";
   document.getElementById("p-email").value = "";
+  document.getElementById("p-website").value = "";
   renderProspects();
 }
 
@@ -518,6 +531,7 @@ function importCSV(text) {
       ownerFirstName: r.owner_first_name || "",
       email: r.email || "",
       phone: r.phone || "",
+      website: r.website || "",
       marketId, industryId,
       sentSteps: [],
     });

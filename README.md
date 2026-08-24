@@ -37,8 +37,10 @@ backup** to move your scripts/prospects to another browser or device, then
    industry, or add your own industries (they get a sensible default sequence
    immediately, generated from the same framework).
 3. **Prospects** — add business owners one at a time, or bulk import a CSV with
-   columns `business_name, owner_first_name, email, phone, city, industry`.
-   Unrecognized cities/industries in the CSV are created automatically.
+   columns `business_name, owner_first_name, email, phone, website, city, industry`.
+   Unrecognized cities/industries in the CSV are created automatically. Click
+   **Edit** on any row to fix a field in place (e.g. filling in a blank you
+   didn't have at import time).
 4. **Generate & Send** — filter prospects by market/industry, pick a sequence
    step, and generate the merged emails. Copy any email individually, mark
    prospects as sent per step (so step 2/3 filters only show who's actually due),
@@ -46,7 +48,7 @@ backup** to move your scripts/prospects to another browser or device, then
 
 ## Merge fields available in every script
 
-`{{business_name}}` `{{owner_first_name}}` `{{city}}` `{{region}}`
+`{{business_name}}` `{{owner_first_name}}` `{{website}}` `{{city}}` `{{region}}`
 `{{industry_label}}` `{{pain_hook}}` `{{your_name}}` `{{your_company}}`
 `{{your_offer}}` `{{proof_point}}` `{{booking_link}}` `{{your_phone}}` `{{signature}}`
 
