@@ -167,6 +167,7 @@ tr:last-child td { border-bottom: none; }
 .tag-done { color: var(--success); font-weight: 600; }
 .tag-empty { color: var(--text-muted); }
 .row-actions { display: flex; gap: 6px; white-space: nowrap; }
+td a { color: var(--primary-dark); }
 .editing-row td { background: var(--primary-soft); padding: 6px 8px; }
 .editing-row input, .editing-row select { padding: 6px 8px; font-size: 12.5px; min-width: 100px; }
 
