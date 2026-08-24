@@ -97,7 +97,7 @@ input, select, textarea {
   border: 1px solid var(--border); border-radius: 7px;
   padding: 9px 10px; background: #fff;
 }
-textarea { resize: vertical; font-family: inherit; }
+textarea { resize: vertical; font-family: inherit; width: 100%; }
 input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary-soft); border-color: var(--primary); }
 
 .form-row { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 4px; }
