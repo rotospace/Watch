@@ -52,6 +52,7 @@ let selectedIndustryId = state.industries[0] ? state.industries[0].id : null;
 let selectedStep = 1;
 let lastGenerated = []; // [{prospect, subject, body}]
 let editingProspectId = null;
+let editingMarketId = null;
 
 // ---------- lookups ----------
 function getMarket(id) { return state.markets.find((m) => m.id === id); }
@@ -251,13 +252,66 @@ function renderMarketChips() {
   const list = document.getElementById("market-list");
   list.innerHTML = "";
   state.markets.forEach((m) => {
+    if (m.id === editingMarketId) {
+      list.appendChild(buildMarketEditChip(m));
+      return;
+    }
     const chip = el("span", { class: "chip" }, [
-      marketLabel(m),
-      el("button", { title: "Remove", onclick: () => removeMarket(m.id) }, ["✕"]),
+      el("button", { class: "chip-label", title: "Click to edit", onclick: () => { editingMarketId = m.id; renderMarketChips(); } }, [marketLabel(m)]),
+      el("button", { class: "chip-remove", title: "Remove", onclick: () => removeMarket(m.id) }, ["✕"]),
     ]);
     list.appendChild(chip);
   });
   refreshMarketSelects();
+  refreshRegionSelects();
+  refreshRegionDatalist();
+}
+
+function buildMarketEditChip(m) {
+  const cityInput = el("input", { type: "text", value: m.city });
+  const regionInput = el("input", { type: "text", value: m.region, list: "region-datalist" });
+
+  function save() {
+    const city = cityInput.value.trim();
+    const region = regionInput.value.trim();
+    if (!city) { notify("Enter a city/area name.", "error"); return; }
+    if (!region) { notify("Enter a region (e.g. Upper Keys).", "error"); return; }
+    m.city = city;
+    m.region = region;
+    editingMarketId = null;
+    saveState();
+    renderMarketChips();
+    renderProspects();
+  }
+
+  return el("span", { class: "chip chip-editing" }, [
+    cityInput,
+    regionInput,
+    el("button", { class: "chip-remove", title: "Save", onclick: save }, ["✓"]),
+    el("button", { class: "chip-remove", title: "Cancel", onclick: () => { editingMarketId = null; renderMarketChips(); } }, ["✕"]),
+  ]);
+}
+
+function refreshRegionDatalist() {
+  const datalist = document.getElementById("region-datalist");
+  if (!datalist) return;
+  const regions = Array.from(new Set(state.markets.map((m) => m.region))).sort();
+  datalist.innerHTML = "";
+  regions.forEach((r) => datalist.appendChild(el("option", { value: r })));
+}
+
+function refreshRegionSelects() {
+  const targets = ["filter-region", "g-region"];
+  const regions = Array.from(new Set(state.markets.map((m) => m.region))).sort();
+  targets.forEach((id) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const keepValue = sel.value;
+    sel.innerHTML = "";
+    sel.appendChild(el("option", { value: "" }, [id === "g-region" ? "All regions" : "All"]));
+    regions.forEach((r) => sel.appendChild(el("option", { value: r }, [r])));
+    if (regions.includes(keepValue)) sel.value = keepValue;
+  });
 }
 
 async function removeMarket(id) {
@@ -438,13 +492,16 @@ function renderProspects() {
   document.getElementById("prospect-count").textContent = state.prospects.length;
   const marketFilter = document.getElementById("filter-market").value;
   const industryFilter = document.getElementById("filter-industry").value;
+  const regionFilter = document.getElementById("filter-region").value;
   const tbody = document.querySelector("#prospect-table tbody");
   tbody.innerHTML = "";
 
-  const rows = state.prospects.filter((p) =>
-    (!marketFilter || p.marketId === marketFilter) &&
-    (!industryFilter || p.industryId === industryFilter)
-  );
+  const rows = state.prospects.filter((p) => {
+    const market = getMarket(p.marketId);
+    return (!marketFilter || p.marketId === marketFilter) &&
+      (!industryFilter || p.industryId === industryFilter) &&
+      (!regionFilter || (market && market.region === regionFilter));
+  });
 
   if (!rows.length) {
     tbody.appendChild(el("tr", {}, [el("td", { colspan: "9", class: "empty-state" }, ["No prospects yet — add one above or import a CSV."])]));
@@ -539,12 +596,13 @@ function addProspectFromForm() {
   renderProspects();
 }
 
-function findOrCreateMarketByCity(cityRaw) {
+function findOrCreateMarketByCity(cityRaw, regionRaw) {
   if (!cityRaw) return state.markets[0] ? state.markets[0].id : "";
   const city = cityRaw.trim();
   const existing = state.markets.find((m) => m.city.toLowerCase() === city.toLowerCase());
   if (existing) return existing.id;
-  const m = { id: slugify(city), region: "South Florida", city };
+  const region = (regionRaw || "").trim() || "South Florida";
+  const m = { id: slugify(city), region, city };
   state.markets.push(m);
   return m.id;
 }
@@ -564,7 +622,7 @@ function importCSV(text) {
   let count = 0;
   rows.forEach((r) => {
     if (!r.business_name && !r.email) return;
-    const marketId = findOrCreateMarketByCity(r.city);
+    const marketId = findOrCreateMarketByCity(r.city, r.region);
     const industryId = findOrCreateIndustryByName(r.industry);
     state.prospects.push({
       id: uid("p"),
@@ -590,14 +648,17 @@ function importCSV(text) {
 function generateEmails() {
   const marketId = document.getElementById("g-market").value;
   const industryId = document.getElementById("g-industry").value;
+  const regionId = document.getElementById("g-region").value;
   const step = Number(document.getElementById("g-step").value);
   const onlyShow = document.getElementById("g-onlyshow").value;
 
-  const matches = state.prospects.filter((p) =>
-    (!marketId || p.marketId === marketId) &&
-    (!industryId || p.industryId === industryId) &&
-    (onlyShow === "all" || !(p.sentSteps || []).includes(step))
-  );
+  const matches = state.prospects.filter((p) => {
+    const market = getMarket(p.marketId);
+    return (!marketId || p.marketId === marketId) &&
+      (!industryId || p.industryId === industryId) &&
+      (!regionId || (market && market.region === regionId)) &&
+      (onlyShow === "all" || !(p.sentSteps || []).includes(step));
+  });
 
   lastGenerated = matches.map((p) => {
     const industry = getIndustry(p.industryId) || state.industries[0];
@@ -729,11 +790,14 @@ function wireSetup() {
     const region = document.getElementById("m-region").value.trim() || "South Florida";
     const city = document.getElementById("m-city").value.trim();
     if (!city) { notify("Enter a city/area name.", "error"); return; }
-    const id = slugify(city + "-" + region);
-    if (state.markets.some((m) => m.id === id)) { notify("That market already exists.", "error"); return; }
-    state.markets.push({ id, region, city });
+    if (state.markets.some((m) => m.city.toLowerCase() === city.toLowerCase())) {
+      notify(`${city} already exists — click its chip below to edit the region instead.`, "error");
+      return;
+    }
+    state.markets.push({ id: slugify(city), region, city });
     saveState();
     document.getElementById("m-city").value = "";
+    document.getElementById("m-region").value = "";
     renderMarketChips();
   });
 
@@ -812,6 +876,7 @@ function wireProspects() {
 
   document.getElementById("filter-market").addEventListener("change", renderProspects);
   document.getElementById("filter-industry").addEventListener("change", renderProspects);
+  document.getElementById("filter-region").addEventListener("change", renderProspects);
 }
 
 function wireSend() {

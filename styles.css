@@ -125,8 +125,12 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary-sof
   border-radius: 999px; padding: 6px 10px 6px 12px; font-size: 12.5px;
   display: flex; align-items: center; gap: 8px;
 }
-.chip button { border: none; background: none; color: var(--primary-dark); cursor: pointer; font-size: 13px; opacity: .7; }
-.chip button:hover { opacity: 1; }
+.chip-label { border: none; background: none; color: var(--primary-dark); cursor: pointer; font: inherit; font-weight: 600; padding: 0; }
+.chip-label:hover { text-decoration: underline; }
+.chip-remove { border: none; background: none; color: var(--primary-dark); cursor: pointer; font-size: 13px; opacity: .7; padding: 0; }
+.chip-remove:hover { opacity: 1; }
+.chip-editing { padding: 4px 6px; gap: 4px; }
+.chip-editing input { padding: 5px 8px; font-size: 12.5px; width: 100px; }
 
 .scripts-layout { display: grid; grid-template-columns: 340px 1fr; gap: 18px; align-items: start; }
 @media (max-width: 900px) { .scripts-layout { grid-template-columns: 1fr; } }
