@@ -192,6 +192,47 @@ function flashSaved() {
   setTimeout(() => flag.classList.remove("show"), 1400);
 }
 
+// Native alert()/confirm() are silently no-ops in a sandboxed iframe (e.g. an
+// Artifact preview) with no allow-modals, so validation messages and destructive
+// confirmations use these in-page equivalents instead.
+let toastTimer = null;
+function notify(message, type) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.className = "toast" + (type === "error" ? " error" : "");
+  toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.hidden = true; }, 3500);
+}
+
+function confirmDialog(message) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById("confirm-overlay");
+    const okBtn = document.getElementById("confirm-ok");
+    const cancelBtn = document.getElementById("confirm-cancel");
+    document.getElementById("confirm-message").textContent = message;
+    overlay.hidden = false;
+
+    function cleanup(result) {
+      overlay.hidden = true;
+      okBtn.removeEventListener("click", onOk);
+      cancelBtn.removeEventListener("click", onCancel);
+      overlay.removeEventListener("click", onOverlayClick);
+      document.removeEventListener("keydown", onKeydown);
+      resolve(result);
+    }
+    function onOk() { cleanup(true); }
+    function onCancel() { cleanup(false); }
+    function onOverlayClick(e) { if (e.target === overlay) cleanup(false); }
+    function onKeydown(e) { if (e.key === "Escape") cleanup(false); }
+
+    okBtn.addEventListener("click", onOk);
+    cancelBtn.addEventListener("click", onCancel);
+    overlay.addEventListener("click", onOverlayClick);
+    document.addEventListener("keydown", onKeydown);
+  });
+}
+
 // ---- Setup tab ----
 function renderSetup() {
   const s = state.sender;
@@ -219,9 +260,9 @@ function renderMarketChips() {
   refreshMarketSelects();
 }
 
-function removeMarket(id) {
+async function removeMarket(id) {
   const inUse = state.prospects.some((p) => p.marketId === id);
-  if (inUse && !confirm("Some prospects use this market. Remove it anyway? (their market will show as unknown)")) return;
+  if (inUse && !(await confirmDialog("Some prospects use this market. Remove it anyway? (their market will show as unknown)"))) return;
   state.markets = state.markets.filter((m) => m.id !== id);
   saveState();
   renderMarketChips();
@@ -255,9 +296,9 @@ function renderIndustryList() {
   });
 }
 
-function removeIndustry(id) {
+async function removeIndustry(id) {
   const inUse = state.prospects.some((p) => p.industryId === id);
-  if (inUse && !confirm("Some prospects use this industry. Delete it anyway?")) return;
+  if (inUse && !(await confirmDialog("Some prospects use this industry. Delete it anyway?"))) return;
   state.industries = state.industries.filter((i) => i.id !== id);
   delete state.scriptOverrides[id];
   saveState();
@@ -445,7 +486,7 @@ function buildProspectEditRow(p) {
   const industrySelect = el("select", {}, industryOptionEls(p.industryId));
 
   function save() {
-    if (!businessInput.value.trim() || !emailInput.value.trim()) { alert("Business name and email are required."); return; }
+    if (!businessInput.value.trim() || !emailInput.value.trim()) { notify("Business name and email are required.", "error"); return; }
     p.businessName = businessInput.value.trim();
     p.ownerFirstName = ownerInput.value.trim();
     p.email = emailInput.value.trim();
@@ -488,7 +529,7 @@ function addProspectFromForm() {
   const website = document.getElementById("p-website").value.trim();
   const marketId = document.getElementById("p-market").value;
   const industryId = document.getElementById("p-industry").value;
-  if (!business || !email) { alert("Business name and email are required."); return; }
+  if (!business || !email) { notify("Business name and email are required.", "error"); return; }
   state.prospects.push({ id: uid("p"), businessName: business, ownerFirstName: owner, email, phone: "", website, marketId, industryId, sentSteps: [] });
   saveState();
   document.getElementById("p-business").value = "";
@@ -640,7 +681,7 @@ function toggleMarkSent(g) {
 }
 
 function exportGeneratedCSV() {
-  if (!lastGenerated.length) { alert("Generate emails first."); return; }
+  if (!lastGenerated.length) { notify("Generate emails first.", "error"); return; }
   const rows = lastGenerated.map((g) => ({
     to_email: g.prospect.email,
     business_name: g.prospect.businessName,
@@ -687,9 +728,9 @@ function wireSetup() {
   document.getElementById("add-market").addEventListener("click", () => {
     const region = document.getElementById("m-region").value.trim() || "South Florida";
     const city = document.getElementById("m-city").value.trim();
-    if (!city) { alert("Enter a city/area name."); return; }
+    if (!city) { notify("Enter a city/area name.", "error"); return; }
     const id = slugify(city + "-" + region);
-    if (state.markets.some((m) => m.id === id)) { alert("That market already exists."); return; }
+    if (state.markets.some((m) => m.id === id)) { notify("That market already exists.", "error"); return; }
     state.markets.push({ id, region, city });
     saveState();
     document.getElementById("m-city").value = "";
@@ -710,9 +751,9 @@ function wireSetup() {
         state = { ...defaultState(), ...parsed };
         saveState();
         renderAll();
-        alert("Backup imported.");
+        notify("Backup imported.");
       } catch (err) {
-        alert("Could not read that file as a valid backup.");
+        notify("Could not read that file as a valid backup.", "error");
       }
     };
     reader.readAsText(file);
@@ -725,9 +766,9 @@ function wireScripts() {
     const label = document.getElementById("i-label").value.trim();
     const category = document.getElementById("i-category").value;
     const painHook = document.getElementById("i-painhook").value.trim() || "slow lead follow-up and inconsistent local visibility";
-    if (!label) { alert("Enter an industry name."); return; }
+    if (!label) { notify("Enter an industry name.", "error"); return; }
     const id = slugify(label);
-    if (state.industries.some((i) => i.id === id)) { alert("That industry already exists."); return; }
+    if (state.industries.some((i) => i.id === id)) { notify("That industry already exists.", "error"); return; }
     state.industries.push({ id, category, label, painHook, custom: true });
     saveState();
     document.getElementById("i-label").value = "";
@@ -739,9 +780,9 @@ function wireScripts() {
     refreshIndustrySelects();
   });
 
-  document.getElementById("reset-scripts").addEventListener("click", () => {
+  document.getElementById("reset-scripts").addEventListener("click", async () => {
     if (!selectedIndustryId) return;
-    if (!confirm("Reset all 3 scripts for this industry to the default framework?")) return;
+    if (!(await confirmDialog("Reset all 3 scripts for this industry to the default framework?"))) return;
     delete state.scriptOverrides[selectedIndustryId];
     saveState();
     renderScriptEditor();
@@ -753,7 +794,7 @@ function wireProspects() {
 
   document.getElementById("import-csv").addEventListener("click", () => {
     const text = document.getElementById("csv-input").value;
-    if (!text.trim()) { alert("Paste CSV text or upload a file first."); return; }
+    if (!text.trim()) { notify("Paste CSV text or upload a file first.", "error"); return; }
     importCSV(text);
   });
 

@@ -9,6 +9,18 @@
 <body>
 <div class="app">
 
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <div id="confirm-overlay" class="confirm-overlay" hidden>
+    <div class="confirm-box" role="alertdialog" aria-modal="true">
+      <p id="confirm-message"></p>
+      <div class="confirm-actions">
+        <button id="confirm-cancel" class="btn secondary">Cancel</button>
+        <button id="confirm-ok" class="btn danger-outline">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark">&#9993;</span>
