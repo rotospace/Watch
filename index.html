@@ -9,6 +9,18 @@
 <body>
 <div class="app">
 
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <div id="confirm-overlay" class="confirm-overlay" hidden>
+    <div class="confirm-box" role="alertdialog" aria-modal="true">
+      <p id="confirm-message"></p>
+      <div class="confirm-actions">
+        <button id="confirm-cancel" class="btn secondary">Cancel</button>
+        <button id="confirm-ok" class="btn danger-outline">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark">&#9993;</span>
@@ -57,17 +69,21 @@
             <textarea id="s-proof" rows="2" placeholder="e.g. We've helped a handful of businesses in South Florida add 15-20 new bookings a month within 60 days."></textarea>
           </label>
           <button class="btn" id="save-setup">Save</button>
+          <button class="btn secondary" id="fill-f9a-defaults">Fill from Front9 Agency (web search — verify)</button>
           <span class="save-flag" id="setup-saved-flag">Saved</span>
         </div>
 
         <div class="card">
           <h2>Markets (city / region)</h2>
-          <p class="hint">Start with South Florida, or name any new city/region to target.</p>
+          <p class="hint">Start with South Florida, or name any new city/region to target. "Region" is any
+            grouping broader than one city — e.g. Upper Keys / Middle Keys / Lower Keys instead of just
+            South Florida — so you can filter and send by that group later. Click a chip below to edit it.</p>
           <div class="form-row three">
-            <label>Region<input type="text" id="m-region" placeholder="South Florida" /></label>
+            <label>Region<input type="text" id="m-region" placeholder="e.g. Upper Keys" list="region-datalist" /></label>
             <label>City / area<input type="text" id="m-city" placeholder="Miami" /></label>
             <button class="btn" id="add-market">+ Add market</button>
           </div>
+          <datalist id="region-datalist"></datalist>
           <div id="market-list" class="chip-list"></div>
         </div>
 
@@ -119,6 +135,7 @@
           <label>Business name<input type="text" id="p-business" /></label>
           <label>Owner first name<input type="text" id="p-owner" /></label>
           <label>Email<input type="email" id="p-email" /></label>
+          <label>Website<input type="text" id="p-website" placeholder="example.com" /></label>
           <label>Market<select id="p-market"></select></label>
           <label>Industry<select id="p-industry"></select></label>
           <label>Signal <span class="hint-inline">(optional)</span><input type="text" id="p-signal" placeholder="e.g. no standalone website, Facebook only" /></label>
@@ -128,9 +145,14 @@
 
       <div class="card">
         <h2>Import from CSV</h2>
-        <p class="hint">Columns: <code>business_name, owner_first_name, email, phone, city, industry, signal</code> (city/industry are matched by name; unmatched values are created automatically. <code>signal</code> is optional — a short, specific observation about that business, e.g. from the <code>prospecting</code> skill's website-status check, dropped into the opening line via {{signal_line}}).</p>
-        <textarea id="csv-input" rows="4" placeholder="business_name,owner_first_name,email,phone,city,industry,signal
-Sunshine Roofing,Marco,marco@sunshineroofingfl.com,,Miami,Roofing Contractors,no standalone website — Facebook only"></textarea>
+        <p class="hint">Columns: <code>business_name, owner_first_name, email, phone, website, city, region, industry, signal</code>
+          (city/industry are matched by name; unmatched values are created automatically — a new city defaults to
+          South Florida if <code>region</code> is left blank, so fill it in for anywhere that needs its own
+          grouping, e.g. Upper/Middle/Lower Keys. <code>signal</code> is optional — a short, specific observation
+          about that business, e.g. from the <code>prospecting</code> skill's website-status check, dropped into
+          the opening line via {{signal_line}}). Paste CSV text or upload a file.</p>
+        <textarea id="csv-input" rows="4" placeholder="business_name,owner_first_name,email,phone,website,city,region,industry,signal
+Sunshine Roofing,Marco,marco@sunshineroofingfl.com,,sunshineroofingfl.com,Miami,South Florida,Roofing Contractors,no standalone website — Facebook only"></textarea>
         <div class="form-row">
           <label class="btn secondary file-btn">Upload CSV file
             <input type="file" id="csv-file" accept=".csv,text/csv" hidden />
@@ -144,6 +166,7 @@ Sunshine Roofing,Marco,marco@sunshineroofingfl.com,,Miami,Roofing Contractors,no
         <div class="row-between">
           <h2>Prospect list (<span id="prospect-count">0</span>)</h2>
           <div class="form-row">
+            <label>Filter region<select id="filter-region"><option value="">All</option></select></label>
             <label>Filter market<select id="filter-market"><option value="">All</option></select></label>
             <label>Filter industry<select id="filter-industry"><option value="">All</option></select></label>
           </div>
@@ -151,7 +174,7 @@ Sunshine Roofing,Marco,marco@sunshineroofingfl.com,,Miami,Roofing Contractors,no
         <div class="table-wrap">
           <table id="prospect-table">
             <thead>
-              <tr><th>Business</th><th>Owner</th><th>Email</th><th>Market</th><th>Industry</th><th>Signal</th><th>Sent</th><th></th></tr>
+              <tr><th>Business</th><th>Owner</th><th>Email</th><th>Phone</th><th>Website</th><th>Market</th><th>Industry</th><th>Signal</th><th>Sent</th><th></th></tr>
             </thead>
             <tbody></tbody>
           </table>
@@ -163,7 +186,8 @@ Sunshine Roofing,Marco,marco@sunshineroofingfl.com,,Miami,Roofing Contractors,no
     <section class="tab-panel" id="tab-send">
       <div class="card">
         <h2>Generate emails</h2>
-        <div class="form-row four">
+        <div class="form-row five">
+          <label>Region<select id="g-region"><option value="">All regions</option></select></label>
           <label>Market<select id="g-market"><option value="">All markets</option></select></label>
           <label>Industry<select id="g-industry"><option value="">All industries</option></select></label>
           <label>Sequence step<select id="g-step">
