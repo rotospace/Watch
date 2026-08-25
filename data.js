@@ -80,7 +80,7 @@ Worth a quick look?
 
 {{proof_point}}
 
-Happy to walk you through how that could work for {{business_name}} — just reply here, or grab a time that works: {{booking_link}}.
+Happy to walk you through how that could work for {{business_name}} — just reply here, or take a look: {{booking_link}}.
 
 {{signature}}`,
   },

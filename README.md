@@ -27,7 +27,8 @@ backup** to move your scripts/prospects to another browser or device, then
 ## How it's organized
 
 1. **Setup** — your name/company/contact info, your one-line offer/value
-   proposition, a proof point, and your booking link. These fill the
+   proposition, a proof point, and a CTA link (booking page, signup, free
+   tool — whatever the ask is). These fill the
    `{{your_offer}}`, `{{proof_point}}`, `{{signature}}`, etc. merge fields used in
    every script. Also where you add markets (city + region) — South Florida cities
    are pre-loaded, add any other city/region here. **Region** is any grouping
