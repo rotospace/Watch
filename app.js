@@ -797,13 +797,16 @@ function wireSetup() {
   });
 
   document.getElementById("fill-f9a-defaults").addEventListener("click", () => {
-    const companyField = document.getElementById("s-company");
-    if (!companyField.value.trim()) companyField.value = "Front9 Agency";
+    document.getElementById("s-name").value = "Jason Reuter";
+    document.getElementById("s-title").value = "Founder";
+    document.getElementById("s-company").value = "Front9 AI";
+    document.getElementById("s-phone").value = "(305) 537-6861";
+    document.getElementById("s-booking").value = "www.f9a.co";
     document.getElementById("s-offer").value =
-      "helping South Florida business owners generate more leads through SEO, paid ads, social media management, web design, custom app development, and FAA-certified drone/aerial video marketing";
+      "running a free AI-powered signal check on local businesses' online presence — what's working, what's missing, and what to fix first";
     document.getElementById("s-proof").value =
-      "We're Front9 Agency (f9a.co), led by Jason Reuter — an FAA Part 107-certified team already serving South Florida businesses with SEO, PPC, and web design, plus luxury drone/aerial video through our Rotospace brand. Happy to share examples specific to your industry.";
-    notify("Filled in from web search results — review for accuracy, then click Save.");
+      "No case studies to share yet — but your free signal check will show exactly what's affecting your visibility right now, no cost and no commitment.";
+    notify("Filled in Front9 AI defaults — review before Save.");
   });
 
   document.getElementById("add-market").addEventListener("click", () => {
