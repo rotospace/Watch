@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Front9 Fit Finder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <div class="progress" id="progress" hidden><div class="progress-fill" id="progressFill"></div></div>
+  <button class="owner-toggle" id="ownerToggle" type="button" hidden>Leads</button>
+
+  <main id="main">
+    <section class="screen" data-screen="welcome">
+      <div class="eyebrow" data-copy="welcome-eyebrow"></div>
+      <h1 class="headline" data-copy="welcome-headline"></h1>
+      <p class="sub" data-copy="welcome-sub"></p>
+      <button class="btn btn-primary" type="button" data-action="start"><span data-copy="welcome-cta"></span> →</button>
+    </section>
+
+    <section class="screen" data-screen="familiarity" hidden>
+      <button class="btn-back" type="button" data-back>← Back</button>
+      <h2>How familiar are you with Front9?</h2>
+      <div class="pillgrid" data-field="familiarity">
+        <button class="pill" type="button" data-value="new">This is my first time hearing about it <span class="arrow">→</span></button>
+        <button class="pill" type="button" data-value="basics">I know the basics <span class="arrow">→</span></button>
+        <button class="pill" type="button" data-value="client">I'm already a client <span class="arrow">→</span></button>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="owned" hidden>
+      <button class="btn-back" type="button" data-back>← Back</button>
+      <h2>Which Front9 products do you have today?</h2>
+      <p class="sub">So we only suggest what's new to you.</p>
+      <div class="checklist" data-multi="owned"></div>
+      <button class="btn btn-primary" type="button" data-action="owned-continue" disabled>Continue →</button>
+    </section>
+
+    <section class="screen" data-screen="companySize" hidden>
+      <button class="btn-back" type="button" data-back>← Back</button>
+      <h2 data-copy="size-headline"></h2>
+      <div class="pillgrid" data-field="companySize">
+        <button class="pill" type="button" data-value="solo">Solo or small team (1–10) <span class="arrow">→</span></button>
+        <button class="pill" type="button" data-value="growing">Growing business (11–50) <span class="arrow">→</span></button>
+        <button class="pill" type="button" data-value="multi">Multi-location or 50+ employees <span class="arrow">→</span></button>
+        <button class="pill" type="button" data-value="enterprise">Enterprise or multi-brand organization <span class="arrow">→</span></button>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="needs" hidden>
+      <button class="btn-back" type="button" data-back>← Back</button>
+      <h2 data-copy="needs-headline"></h2>
+      <p class="sub" data-copy="needs-sub"></p>
+      <div class="checklist" data-multi="needs"></div>
+      <button class="btn btn-primary" type="button" data-action="needs-continue" disabled>Continue →</button>
+    </section>
+
+    <section class="screen" data-screen="install" hidden>
+      <button class="btn-back" type="button" data-back>← Back</button>
+      <h2>Where does this need to run?</h2>
+      <p class="sub">At your size this changes how we scope it. Front9 can run on shared cloud, or as a private AI install inside your company.</p>
+      <div class="pillgrid" data-field="install">
+        <button class="pill" type="button" data-value="yes">Inside our company: private install with SSO, data residency, our own infrastructure <span class="arrow">→</span></button>
+        <button class="pill" type="button" data-value="no">Shared cloud is fine <span class="arrow">→</span></button>
+        <button class="pill" type="button" data-value="unsure">Not sure yet <span class="arrow">→</span></button>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="reveal" hidden>
+      <button class="btn-back" type="button" data-back>← Back</button>
+      <div class="eyebrow" id="revealEyebrow">Your fit</div>
+      <h1 class="headline" id="revealHeadline"></h1>
+      <div class="result-card" id="resultCard"></div>
+      <button class="btn btn-primary" type="button" data-action="to-contact">Get a proposal →</button>
+    </section>
+
+    <section class="screen" data-screen="contact" hidden>
+      <button class="btn-back" type="button" data-back>← Back</button>
+      <h2 data-copy="contact-headline"></h2>
+      <form class="form" data-form="contact" novalidate>
+        <label class="field">Full name<input type="text" name="name" autocomplete="name" placeholder="Jordan Rivera"><span class="field-error" data-error-for="name" hidden></span></label>
+        <label class="field">Work email<input type="email" name="email" autocomplete="email" placeholder="you@company.com"><span class="field-error" data-error-for="email" hidden></span></label>
+        <label class="field">Company<input type="text" name="company" autocomplete="organization" placeholder="Company name"><span class="field-error" data-error-for="company" hidden></span></label>
+        <label class="field">Phone (optional)<input type="tel" name="phone" autocomplete="tel" placeholder="(555) 012-3456"></label>
+        <label class="field">Anything else we should know? (optional)<textarea name="note" rows="3" placeholder="Timeline, budget, current tools…"></textarea></label>
+        <div class="error" data-error hidden></div>
+        <button class="btn btn-primary" type="submit">Submit</button>
+      </form>
+    </section>
+
+    <section class="screen" data-screen="done" hidden>
+      <div class="center-icon" aria-hidden="true">✓</div>
+      <h1 class="headline" id="doneHeadline">You're set.</h1>
+      <p class="sub" id="doneSub"></p>
+    </section>
+  </main>
+
+  <div id="dashboard" hidden>
+    <div class="dash-head">
+      <div>
+        <div class="eyebrow">Owner view</div>
+        <h2>Fit Finder responses</h2>
+        <p class="sub" id="storageNote"></p>
+      </div>
+      <button class="btn-small" type="button" data-action="close-dashboard">Back to flow</button>
+    </div>
+    <div class="dash-stats">
+      <div class="dash-tile"><span class="n mono" data-stat="total">0</span><span class="l">Responses</span></div>
+      <div class="dash-tile"><span class="n mono" data-stat="warm">0</span><span class="l">Warm leads</span></div>
+      <div class="dash-tile"><span class="n mono" data-stat="ultra">0</span><span class="l">Ultra fit</span></div>
+      <div class="dash-tile"><span class="n mono" data-stat="install">0</span><span class="l">Want install</span></div>
+      <div class="dash-tile"><span class="n mono" data-stat="topNeed">—</span><span class="l">Most requested</span></div>
+      <div class="dash-tile"><span class="n mono" data-stat="avgNeeds">0</span><span class="l">Avg needs</span></div>
+    </div>
+    <div class="dash-actions">
+      <button class="btn-small" type="button" data-action="export-csv">Download CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>When</th><th>Contact</th><th>Email</th><th>Org size</th><th>Familiarity</th><th>Needs</th><th>Recommendation</th><th>Note</th></tr></thead>
+        <tbody id="leadsBody"></tbody>
+      </table>
+      <div class="empty" id="leadsEmpty" hidden>No responses yet. Submit the flow once to see it here.</div>
+    </div>
+  </div>
+</div>
+<script src="logic.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
