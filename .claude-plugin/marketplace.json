@@ -1,0 +1,13 @@
+{
+  "name": "watch",
+  "owner": "rotospace",
+  "description": "Marketplace for the /watch skill -- gives Claude the ability to watch any video.",
+  "plugins": [
+    {
+      "name": "watch",
+      "source": "./",
+      "description": "Give Claude the ability to watch any video (YouTube URL or local file).",
+      "version": "0.1.0"
+    }
+  ]
+}

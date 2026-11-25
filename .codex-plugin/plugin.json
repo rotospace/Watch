@@ -1,0 +1,6 @@
+{
+  "name": "watch",
+  "version": "0.1.0",
+  "description": "Give Codex (or any Agent Skills-compatible host) the ability to watch any video.",
+  "skills": ["./watch"]
+}

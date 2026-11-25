@@ -1,0 +1,11 @@
+{
+  "name": "watch",
+  "version": "0.1.0",
+  "description": "Give Claude the ability to watch any video: timestamped frames + timestamped transcript, extracted with yt-dlp and ffmpeg, with Gemini as a transcription fallback.",
+  "author": "rotospace",
+  "license": "MIT",
+  "skills": [
+    "./skills/watch"
+  ],
+  "hooks": "./hooks/hooks.json"
+}
