@@ -1,102 +1,80 @@
-# /watch
+# Local Prospect Outreach
 
-Give Claude (or Codex, Cursor, Copilot, Gemini CLI, and 50+ other
-[Agent Skills](https://github.com/anthropics/skills)-compatible hosts) the
-ability to watch any video.
+A small, self-contained web app for running cold-email outreach to local business
+owners — "reach **[industry]** owners in **[city/region]**" — starting with South
+Florida, but built so any city or region can be added.
 
-Your coding agent can already browse a repo, but out of the box it can't
-watch a video. `/watch` closes that gap: point it at a YouTube URL or a
-local file and it hands your agent a title, a timestamped transcript, and
-a timestamped set of frames — the same raw material a person would have
-after actually watching it.
+No build step, no server, no account. Everything runs in the browser and is saved
+to that browser's local storage.
 
-## Install
+## Running it
 
-| Where you work | Install |
-|---|---|
-| Claude Code | `/plugin marketplace add rotospace/watch` then `/plugin install watch@watch` |
-| Codex, Cursor, Copilot, Gemini CLI, and 50+ others | `npx skills add rotospace/watch -g` |
-| Claude on the web | Download the skill from the latest release, then Settings → Skills → **+** |
-
-## Why it works
-
-Underneath it is two tools you already trust:
-
-- **`yt-dlp`** fetches captions first and downloads only what the run
-  actually needs.
-- **`ffmpeg`** pulls the frames.
-
-On macOS both install themselves on your first `/watch` call through
-Homebrew. On Linux and Windows, the setup step prints the exact command
-for you to paste.
-
-Prove it works:
-
-```
-/watch https://youtu.be/dQw4w9WgXcQ what happens at the 30 second mark?
-```
-
-> **Pro tip:** on the web version, turn on "Code execution and file
-> creation" first. The skill shells out to `ffmpeg` and `yt-dlp`, so
-> without it the upload succeeds and every run fails.
-
-## Wire up the one key you need
-
-Get a free Gemini key — that's the only key in this whole pipeline, and
-it's only used as a transcription fallback when a video has no captions.
+Open `index.html` directly in a browser, or serve the folder locally:
 
 ```bash
-export GEMINI_API_KEY="..."     # from https://aistudio.google.com/apikey
-pip install google-genai
+npx http-server -p 8080 .
+# then open http://localhost:8080
 ```
 
-If a video already has captions, `/watch` never touches Gemini — captions
-are free, fast, and usually more accurate than a transcription pass.
+To publish it somewhere you can access from any device, push this folder to
+GitHub Pages (Settings → Pages → deploy from this branch), Netlify, or any static
+host — it's just three static files (`index.html`, `styles.css`, `app.js`, `data.js`).
 
-## How Claude reasons about the output
+**Note:** data lives in that browser's local storage only. Use Setup → **Export full
+backup** to move your scripts/prospects to another browser or device, then
+**Import backup** there.
 
-`/watch` doesn't just dump frames and text at the model — the skill
-instructions (`skills/watch/SKILL.md`) tell it to:
+## How it's organized
 
-1. Treat frames as *what was seen* and the transcript as *what was said*,
-   and merge both into a single timeline before drawing any conclusion.
-2. Build that timeline as beats — timestamp, what's on screen, what's
-   spoken, what changed since the last beat — then read across it for
-   structure: how it opens, how it holds attention, where it turns, how
-   it closes.
-3. Report only what the frames or transcript actually show, marking
-   anything inferred as inference and anything the sampling could have
-   missed as a gap.
-4. Finish with the three highest-signal observations, each citing a
-   timestamp.
+1. **Setup** — your name/company/contact info, your one-line offer/value
+   proposition, a proof point, and a CTA link (booking page, signup, free
+   tool — whatever the ask is). These fill the
+   `{{your_offer}}`, `{{proof_point}}`, `{{signature}}`, etc. merge fields used in
+   every script. Also where you add markets (city + region) — South Florida cities
+   are pre-loaded, add any other city/region here. **Region** is any grouping
+   broader than one city — it doesn't have to be "South Florida"; use it for
+   sub-areas like Upper Keys / Middle Keys / Lower Keys, a county, a metro name,
+   whatever you actually want to filter and send by later. Click a market chip to
+   edit its city or region in place; typing a region reuses one you've already
+   entered via autocomplete, so naming stays consistent as you add more markets.
+2. **Scripts** — 18 industries pre-loaded across Home Services, Professional
+   Services, Health & Wellness, and Food & Retail, each with a 3-email sequence
+   (initial outreach → follow-up → breakup/last touch). Edit any script per
+   industry, or add your own industries (they get a sensible default sequence
+   immediately, generated from the same framework).
+3. **Prospects** — add business owners one at a time, or bulk import a CSV with
+   columns `business_name, owner_first_name, email, phone, website, city, region, industry, signal`.
+   Unrecognized cities/industries in the CSV are created automatically — a new
+   city defaults to the South Florida region if the `region` column is left
+   blank, so fill it in when a city needs its own grouping. `signal` is
+   optional: a short, specific observation about that one business (e.g. "no
+   standalone website, Facebook page only") that drops into the opening line via
+   `{{signal_line}}` — leave it blank and the email still reads cleanly. Filter
+   the prospect list by region, market, or industry (any combination). Click
+   **Edit** on any row to fix a field in place (e.g. filling in a blank you
+   didn't have at import time).
+4. **Generate & Send** — filter prospects by region/market/industry, pick a
+   sequence step, and generate the merged emails. Copy any email individually, mark
+   prospects as sent per step (so step 2/3 filters only show who's actually due),
+   or export the batch as a CSV for a mail-merge tool.
 
-That's what turns "I read the captions" into something closer to "I
-watched it."
+## Merge fields available in every script
 
-## Repo layout
+`{{business_name}}` `{{owner_first_name}}` `{{website}}` `{{city}}` `{{region}}`
+`{{industry_label}}` `{{pain_hook}}` `{{your_name}}` `{{your_company}}`
+`{{your_offer}}` `{{proof_point}}` `{{booking_link}}` `{{your_phone}}` `{{signature}}`
+`{{signal}}` `{{signal_line}}`
 
-```
-.claude-plugin/       Claude Code plugin + marketplace manifest
-skills/watch/          the skill itself (SKILL.md + scripts, source of truth)
-.agents/plugins/watch  symlink -> skills/watch, for generic Agent Skills hosts
-.codex-plugin/watch    symlink -> skills/watch, for Codex
-hooks/                 SessionStart hook that checks/installs deps
-tests/                 unit tests for the parsing/frame logic (no network)
-```
+`signal` is the free-text per-prospect observation set on the Prospects tab or via
+CSV. `signal_line` is the ready-to-drop-in sentence built from it (e.g. "Specifically,
+I noticed no standalone website, Facebook page only. ") — it's an empty string when a
+prospect has no signal, so scripts using `{{signal_line}}` read naturally either way.
 
-## CLI
+## Extending it
 
-The skill is just a thin instruction layer over a plain script you can
-also run by hand:
-
-```bash
-python3 skills/watch/scripts/watch.py "<youtube-url-or-local-path>" \
-  [--start SECONDS] [--end SECONDS] [--max-frames N] [--out DIR]
-```
-
-It prints a human-readable summary followed by a JSON manifest
-(`title`, `duration`, `transcript_source`, `frames[]`) on the last line.
-
-## License
-
-MIT
+- **New industry:** Scripts tab → add name, category, and the one-line pain point
+  used in the opening line. It's ready to use immediately.
+- **New city/region:** Setup tab → add region + city. Also created automatically
+  the first time it appears in a CSV import.
+- **New script variant:** edit any step's subject/body directly in the Scripts
+  tab — changes save automatically and only affect that industry.
